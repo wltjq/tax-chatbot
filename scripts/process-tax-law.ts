@@ -187,7 +187,7 @@ async function main() {
     const mdContent = fs.readFileSync(mdPath, 'utf-8');
     // Clean up markdown formatting to make regex splitting clean
     text = mdContent
-      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
       .replace(/#/g, '')
       .replace(/\r/g, '')
       .replace(/\n\s*\n/g, '\n\n');

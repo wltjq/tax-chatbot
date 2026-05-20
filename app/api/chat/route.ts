@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     message = body.message;
     sessionId = body.sessionId;
-    const history = body.history || [];
+    // Keep only the last 4 messages to prevent token limit exhaustion (Sliding Window)
+    const history = (body.history || []).slice(-4);
 
     if (!message) {
       return NextResponse.json({ error: '메시지가 누락되었습니다.' }, { status: 400 });
@@ -41,8 +42,13 @@ export async function POST(req: NextRequest) {
     let hasCalculation = false;
     
     try {
-      const extractedParams = await extractTaxParameters(message);
-      if (extractedParams.isTaxCalculation && extractedParams.annualSalary && extractedParams.annualSalary > 0) {
+      // Optimize: Only call parameter extraction if query contains numbers or tax calculation keywords
+      const calcKeywords = ['원', '만원', '연봉', '월급', '급여', '소득', '수입', '계산', '공제'];
+      const mightNeedCalculation = calcKeywords.some(k => message.includes(k)) || /\d/.test(message);
+      
+      if (mightNeedCalculation) {
+        const extractedParams = await extractTaxParameters(message);
+        if (extractedParams.isTaxCalculation && extractedParams.annualSalary && extractedParams.annualSalary > 0) {
         hasCalculation = true;
         
         // Calculate taxes using our module
@@ -75,6 +81,7 @@ export async function POST(req: NextRequest) {
 - 최종 예상 납부세액: ${result.estimatedTaxPayable.toLocaleString()}원
 `;
         console.log('Tax calculation performed successfully.');
+        }
       }
     } catch (e) {
       console.error('Failed to extract parameters or calculate tax:', e);

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { User, Sparkles, ChevronDown, ChevronUp, AlertCircle, FileText } from 'lucide-react';
 import { ChatMessage, Citation } from '@/types/chat';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessageItemProps {
   message: ChatMessage;
@@ -28,8 +30,29 @@ export default function ChatMessageItem({ message }: ChatMessageItemProps) {
           }`}
         >
           {/* Content Text */}
-          <div className="text-sm whitespace-pre-line leading-relaxed">
-            {message.content.replace(/\\n/g, '\n')}
+          <div className={`text-sm leading-relaxed ${!isUser ? 'prose prose-sm prose-slate max-w-none' : 'whitespace-pre-line'}`}>
+            {!isUser ? (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  table: ({node, ...props}) => (
+                    <div className="overflow-x-auto w-full my-3">
+                      <table className="border-collapse w-full my-2 text-sm" {...props} />
+                    </div>
+                  ),
+                  th: ({node, ...props}) => (
+                    <th className="border border-slate-300 px-3 py-1.5 bg-slate-100 font-semibold" {...props} />
+                  ),
+                  td: ({node, ...props}) => (
+                    <td className="border border-slate-300 px-3 py-1.5" {...props} />
+                  ),
+                }}
+              >
+                {message.content.replace(/\\n/g, '\n')}
+              </ReactMarkdown>
+            ) : (
+              message.content.replace(/\\n/g, '\n')
+            )}
           </div>
         </div>
 
