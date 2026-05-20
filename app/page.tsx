@@ -1,65 +1,227 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Sidebar from '@/components/chat/Sidebar';
+import ChatArea from '@/components/chat/ChatArea';
+import { ChatMessage, ChatSession } from '@/types/chat';
+
+// Browser-safe UUID helper fallback if crypto.randomUUID is not available
+function generateUUID(): string {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export default function Home() {
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // 1. Initial Load: Fetch Sessions & Set Up Active Session
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  // Fetch all sessions from the API
+  const fetchSessions = async (targetActiveId: string | null = null) => {
+    setIsLoadingSessions(true);
+    try {
+      const res = await fetch('/api/sessions');
+      if (res.ok) {
+        const data: ChatSession[] = await res.json();
+        setSessions(data);
+        
+        // Handle setting active session
+        if (data.length > 0) {
+          const nextActiveId = targetActiveId || data[0].id;
+          setActiveSessionId(nextActiveId);
+          fetchMessages(nextActiveId);
+        } else {
+          // No sessions exist yet, initialize a fresh one
+          startNewSession();
+        }
+      } else {
+        console.error('Failed to fetch sessions');
+        startNewSession();
+      }
+    } catch (e) {
+      console.error('Error fetching sessions:', e);
+      startNewSession();
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
+  // Fetch message history for a specific session
+  const fetchMessages = async (sessionId: string) => {
+    try {
+      const res = await fetch(`/api/messages?sessionId=${sessionId}`);
+      if (res.ok) {
+        const data: ChatMessage[] = await res.json();
+        setMessages(data);
+      } else {
+        console.error('Failed to fetch messages');
+      }
+    } catch (e) {
+      console.error('Error fetching messages:', e);
+    }
+  };
+
+  // Start a new empty session
+  const startNewSession = () => {
+    const newId = generateUUID();
+    setActiveSessionId(newId);
+    setMessages([]);
+  };
+
+  // Handle selecting a session from the sidebar
+  const handleSelectSession = (id: string) => {
+    if (isGenerating) return; // Prevent switching while generating response
+    setActiveSessionId(id);
+    fetchMessages(id);
+  };
+
+  // Handle clicking "New Chat" button
+  const handleCreateSession = () => {
+    if (isGenerating) return;
+    startNewSession();
+  };
+
+  // Handle deleting a session
+  const handleDeleteSession = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop click from selecting the session
+    if (isGenerating) return;
+
+    if (!confirm('이 대화 내용을 삭제하시겠습니까?')) return;
+
+    try {
+      const res = await fetch(`/api/sessions?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        // If we deleted the currently active session, we should select another one or start a new one
+        if (activeSessionId === id) {
+          const remainingSessions = sessions.filter(s => s.id !== id);
+          if (remainingSessions.length > 0) {
+            const nextActiveId = remainingSessions[0].id;
+            setActiveSessionId(nextActiveId);
+            setSessions(remainingSessions);
+            fetchMessages(nextActiveId);
+          } else {
+            setSessions([]);
+            startNewSession();
+          }
+        } else {
+          // Just remove from list
+          setSessions(sessions.filter(s => s.id !== id));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to delete session:', e);
+    }
+  };
+
+  // Handle sending a user message
+  const handleSendMessage = async (text: string) => {
+    if (!activeSessionId || isGenerating) return;
+
+    const currentSessionId = activeSessionId;
+
+    // 1. Construct temporary user message and append to state
+    const userMsg: ChatMessage = {
+      id: generateUUID(),
+      sessionId: currentSessionId,
+      role: 'user',
+      content: text,
+      citations: [],
+      createdAt: new Date()
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setIsGenerating(true);
+
+    try {
+      // Get conversation history to pass as context (excluding the new userMsg)
+      const chatHistory = messages.map(m => ({
+        role: m.role,
+        content: m.content,
+        citations: m.citations
+      }));
+
+      // 2. Call the chat route API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          sessionId: currentSessionId,
+          history: chatHistory
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '상담 처리 중 오류가 발생했습니다.');
+      }
+
+      const responseData = await response.json();
+
+      // 3. Append assistant message to state
+      const assistantMsg: ChatMessage = {
+        id: generateUUID(),
+        sessionId: currentSessionId,
+        role: 'assistant',
+        content: responseData.content,
+        citations: responseData.citations || [],
+        createdAt: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMsg]);
+
+      // 4. Reload sessions to update lists & titles (since a new session might have been saved in DB)
+      fetchSessions(currentSessionId);
+
+    } catch (error: any) {
+      console.error('Send message error:', error);
+      
+      // Show user-friendly error message in chat feed
+      const errorMsg: ChatMessage = {
+        id: generateUUID(),
+        sessionId: currentSessionId,
+        role: 'assistant',
+        content: `오류: ${error.message || '상담을 처리하지 못했습니다. API 키 및 데이터베이스 환경 변수(.env.local) 설정을 확인해주세요.'}`,
+        citations: [],
+        createdAt: new Date()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex-1 flex flex-col md:flex-row h-screen w-screen overflow-hidden">
+      {/* Sidebar - 25% width */}
+      <Sidebar
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        isLoading={isLoadingSessions}
+        onSelectSession={handleSelectSession}
+        onCreateSession={handleCreateSession}
+        onDeleteSession={handleDeleteSession}
+      />
+      
+      {/* Chat Area - 75% width */}
+      <ChatArea
+        messages={messages}
+        isGenerating={isGenerating}
+        onSendMessage={handleSendMessage}
+      />
     </div>
   );
 }
