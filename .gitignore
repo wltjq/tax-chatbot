@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+data/db.json
+data/uploaded_chunks.json
+data/*.txt
 
 # debug
 npm-debug.log*

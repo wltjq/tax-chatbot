@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "index": "tsx scripts/process-tax-law.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
