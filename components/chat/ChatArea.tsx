@@ -92,7 +92,7 @@ export default function ChatArea({ messages, isGenerating, onSendMessage }: Chat
             ))}
 
             {/* Typing Indicator */}
-            {isGenerating && (
+            {isGenerating && (!messages.length || messages[messages.length - 1].role !== 'assistant' || !messages[messages.length - 1].content) && (
               <div className="flex items-start space-x-3 mt-4 mr-auto justify-start max-w-[85%]">
                 <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center shadow-md shadow-amber-500/10">
                   <Sparkles className="h-5 w-5 text-slate-900" />

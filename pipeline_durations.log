@@ -1,0 +1,567 @@
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1287ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1784ms
+[3] Parallel Operations Total: 1784ms
+[4] Gemini Response Generation: 6013ms
+[5] Overall: 7973ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 2695ms (top-k: 3)
+[2] Gemini Parameter Extraction: 11022ms
+[3] Parallel Operations Total: 11023ms
+[4] Gemini Response Generation: 17899ms
+[5] Overall: 28937ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1406ms (top-k: 3)
+[2] Gemini Parameter Extraction: 998ms
+[3] Parallel Operations Total: 1406ms
+[4] Gemini Response Generation: 6665ms
+[5] Overall: 8085ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1308ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1026ms
+[3] Parallel Operations Total: 1309ms
+[4] Gemini Response Generation: 13754ms
+[5] Overall: 15078ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1361ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9289ms
+[3] Parallel Operations Total: 9289ms
+[4] Gemini Response Generation: 5496ms
+[5] Overall: 14801ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1476ms (top-k: 3)
+[2] Gemini Parameter Extraction: 3810ms
+[3] Parallel Operations Total: 3810ms
+[4] Gemini Response Generation: 25862ms
+[5] Overall: 29686ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 2486ms (top-k: 3)
+[2] Gemini Parameter Extraction: 890ms
+[3] Parallel Operations Total: 2486ms
+[4] Gemini Response Generation: 11290ms
+[5] Overall: 13955ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1414ms (top-k: 3)
+[2] Gemini Parameter Extraction: 967ms
+[3] Parallel Operations Total: 1414ms
+[4] Gemini Response Generation: 17271ms
+[5] Overall: 18711ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1355ms (top-k: 3)
+[2] Gemini Parameter Extraction: 11381ms
+[3] Parallel Operations Total: 11381ms
+[4] Gemini Response Generation: 5314ms
+[5] Overall: 16711ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1386ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1959ms
+[3] Parallel Operations Total: 1959ms
+[4] Gemini Response Generation: 4963ms
+[5] Overall: 6937ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1407ms (top-k: 3)
+[2] Gemini Parameter Extraction: 819ms
+[3] Parallel Operations Total: 1407ms
+[4] Gemini Response Generation: 4733ms
+[5] Overall: 6155ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1566ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9324ms
+[3] Parallel Operations Total: 9324ms
+[4] Gemini Response Generation: 12756ms
+[5] Overall: 22096ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1404ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1279ms
+[3] Parallel Operations Total: 1404ms
+[4] Gemini Response Generation: 8190ms
+[5] Overall: 9611ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Stream Mode]
+[1] Pinecone Search: 1358ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1360ms
+[3] Parallel Operations Total: 1360ms
+[4] Gemini Response Generation: 2342ms
+[5] Overall: 3902ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 2567ms (top-k: 3)
+[2] Gemini Parameter Extraction: 6023ms
+[3] Parallel Operations Total: 6023ms
+[4] Gemini Response Generation: 11819ms
+[5] Overall: 18004ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1366ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1008ms
+[3] Parallel Operations Total: 1366ms
+[4] Gemini Response Generation: 5634ms
+[5] Overall: 7018ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 512ms (top-k: 3)
+[2] Gemini Parameter Extraction: 10531ms
+[3] Parallel Operations Total: 10531ms
+[4] Gemini Response Generation: 17563ms
+[5] Overall: 28113ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Stream Mode]
+[1] Pinecone Search: 1414ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1024ms
+[3] Parallel Operations Total: 1414ms
+[4] Gemini Response Generation: 5904ms
+[5] Overall: 7343ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1439ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1176ms
+[3] Parallel Operations Total: 1439ms
+[4] Gemini Response Generation: 5378ms
+[5] Overall: 6835ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1391ms (top-k: 3)
+[2] Gemini Parameter Extraction: 10066ms
+[3] Parallel Operations Total: 10066ms
+[4] Gemini Response Generation: 9281ms
+[5] Overall: 19349ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 678ms (top-k: 3)
+[2] Gemini Parameter Extraction: 5671ms
+[3] Parallel Operations Total: 5671ms
+[4] Gemini Response Generation: 13415ms
+[5] Overall: 19089ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1391ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1472ms
+[3] Parallel Operations Total: 1472ms
+[4] Gemini Response Generation: 14918ms
+[5] Overall: 16392ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Stream Mode]
+[1] Pinecone Search: 1377ms (top-k: 3)
+[2] Gemini Parameter Extraction: 0ms
+[3] Parallel Operations Total: 1377ms
+[4] Gemini Response Generation: 3382ms
+[5] Overall: 4761ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1315ms (top-k: 3)
+[2] Gemini Parameter Extraction: 4571ms
+[3] Parallel Operations Total: 4571ms
+[4] Gemini Response Generation: 14860ms
+[5] Overall: 19433ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1345ms (top-k: 3)
+[2] Gemini Parameter Extraction: 13489ms
+[3] Parallel Operations Total: 13489ms
+[4] Gemini Response Generation: 13835ms
+[5] Overall: 27326ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1381ms (top-k: 3)
+[2] Gemini Parameter Extraction: 13085ms
+[3] Parallel Operations Total: 13085ms
+[4] Gemini Response Generation: 4949ms
+[5] Overall: 18036ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Stream Mode]
+[1] Pinecone Search: 1438ms (top-k: 3)
+[2] Gemini Parameter Extraction: 0ms
+[3] Parallel Operations Total: 1438ms
+[4] Gemini Response Generation: 22002ms
+[5] Overall: 23443ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1394ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1104ms
+[3] Parallel Operations Total: 1394ms
+[4] Gemini Response Generation: 5915ms
+[5] Overall: 7312ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1336ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9446ms
+[3] Parallel Operations Total: 9446ms
+[4] Gemini Response Generation: 8014ms
+[5] Overall: 17464ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1376ms (top-k: 3)
+[2] Gemini Parameter Extraction: 679ms
+[3] Parallel Operations Total: 1377ms
+[4] Gemini Response Generation: 19075ms
+[5] Overall: 20454ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1555ms (top-k: 3)
+[2] Gemini Parameter Extraction: 780ms
+[3] Parallel Operations Total: 1557ms
+[4] Gemini Response Generation: 17463ms
+[5] Overall: 19022ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1168ms (top-k: 3)
+[2] Gemini Parameter Extraction: 7053ms
+[3] Parallel Operations Total: 7053ms
+[4] Gemini Response Generation: 17639ms
+[5] Overall: 24694ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Stream Mode]
+[1] Pinecone Search: 1335ms (top-k: 3)
+[2] Gemini Parameter Extraction: 789ms
+[3] Parallel Operations Total: 1335ms
+[4] Gemini Response Generation: 18751ms
+[5] Overall: 20090ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1379ms (top-k: 3)
+[2] Gemini Parameter Extraction: 4987ms
+[3] Parallel Operations Total: 4987ms
+[4] Gemini Response Generation: 5571ms
+[5] Overall: 10560ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 721ms (top-k: 3)
+[2] Gemini Parameter Extraction: 3476ms
+[3] Parallel Operations Total: 3476ms
+[4] Gemini Response Generation: 21458ms
+[5] Overall: 24937ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1339ms (top-k: 3)
+[2] Gemini Parameter Extraction: 17947ms
+[3] Parallel Operations Total: 17947ms
+[4] Gemini Response Generation: 5826ms
+[5] Overall: 23775ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1249ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9254ms
+[3] Parallel Operations Total: 9254ms
+[4] Gemini Response Generation: 21823ms
+[5] Overall: 31079ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1341ms (top-k: 3)
+[2] Gemini Parameter Extraction: 14829ms
+[3] Parallel Operations Total: 14829ms
+[4] Gemini Response Generation: 7152ms
+[5] Overall: 21984ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1517ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9524ms
+[3] Parallel Operations Total: 9524ms
+[4] Gemini Response Generation: 5745ms
+[5] Overall: 15271ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1604ms (top-k: 3)
+[2] Gemini Parameter Extraction: 12994ms
+[3] Parallel Operations Total: 12994ms
+[4] Gemini Response Generation: 5142ms
+[5] Overall: 18138ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1391ms (top-k: 3)
+[2] Gemini Parameter Extraction: 13716ms
+[3] Parallel Operations Total: 13716ms
+[4] Gemini Response Generation: 11800ms
+[5] Overall: 25520ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1442ms (top-k: 3)
+[2] Gemini Parameter Extraction: 875ms
+[3] Parallel Operations Total: 1442ms
+[4] Gemini Response Generation: 5797ms
+[5] Overall: 7242ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1349ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9525ms
+[3] Parallel Operations Total: 9525ms
+[4] Gemini Response Generation: 15043ms
+[5] Overall: 24572ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1364ms (top-k: 3)
+[2] Gemini Parameter Extraction: 764ms
+[3] Parallel Operations Total: 1364ms
+[4] Gemini Response Generation: 5031ms
+[5] Overall: 6398ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1474ms (top-k: 3)
+[2] Gemini Parameter Extraction: 11326ms
+[3] Parallel Operations Total: 11326ms
+[4] Gemini Response Generation: 19279ms
+[5] Overall: 30609ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1346ms (top-k: 3)
+[2] Gemini Parameter Extraction: 750ms
+[3] Parallel Operations Total: 1346ms
+[4] Gemini Response Generation: 15364ms
+[5] Overall: 16714ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1378ms (top-k: 3)
+[2] Gemini Parameter Extraction: 6443ms
+[3] Parallel Operations Total: 6443ms
+[4] Gemini Response Generation: 4671ms
+[5] Overall: 11119ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1462ms (top-k: 3)
+[2] Gemini Parameter Extraction: 6838ms
+[3] Parallel Operations Total: 6838ms
+[4] Gemini Response Generation: 13708ms
+[5] Overall: 20552ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 611ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1117ms
+[3] Parallel Operations Total: 1117ms
+[4] Gemini Response Generation: 14808ms
+[5] Overall: 15928ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1312ms (top-k: 3)
+[2] Gemini Parameter Extraction: 6264ms
+[3] Parallel Operations Total: 6264ms
+[4] Gemini Response Generation: 16260ms
+[5] Overall: 22528ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1412ms (top-k: 3)
+[2] Gemini Parameter Extraction: 13397ms
+[3] Parallel Operations Total: 13397ms
+[4] Gemini Response Generation: 6131ms
+[5] Overall: 19531ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1375ms (top-k: 3)
+[2] Gemini Parameter Extraction: 12540ms
+[3] Parallel Operations Total: 12540ms
+[4] Gemini Response Generation: 5471ms
+[5] Overall: 18015ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1546ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1201ms
+[3] Parallel Operations Total: 1546ms
+[4] Gemini Response Generation: 5652ms
+[5] Overall: 7202ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1360ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1234ms
+[3] Parallel Operations Total: 1360ms
+[4] Gemini Response Generation: 11312ms
+[5] Overall: 12676ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1314ms (top-k: 3)
+[2] Gemini Parameter Extraction: 862ms
+[3] Parallel Operations Total: 1314ms
+[4] Gemini Response Generation: 5784ms
+[5] Overall: 7102ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1458ms (top-k: 3)
+[2] Gemini Parameter Extraction: 4211ms
+[3] Parallel Operations Total: 4211ms
+[4] Gemini Response Generation: 4906ms
+[5] Overall: 9121ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1367ms (top-k: 3)
+[2] Gemini Parameter Extraction: 1128ms
+[3] Parallel Operations Total: 1367ms
+[4] Gemini Response Generation: 18807ms
+[5] Overall: 20178ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1514ms (top-k: 3)
+[2] Gemini Parameter Extraction: 12947ms
+[3] Parallel Operations Total: 12947ms
+[4] Gemini Response Generation: 17646ms
+[5] Overall: 30596ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1381ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9436ms
+[3] Parallel Operations Total: 9436ms
+[4] Gemini Response Generation: 19601ms
+[5] Overall: 29042ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1344ms (top-k: 3)
+[2] Gemini Parameter Extraction: 12926ms
+[3] Parallel Operations Total: 12926ms
+[4] Gemini Response Generation: 20770ms
+[5] Overall: 33699ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1404ms (top-k: 3)
+[2] Gemini Parameter Extraction: 6056ms
+[3] Parallel Operations Total: 6056ms
+[4] Gemini Response Generation: 19095ms
+[5] Overall: 25156ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1400ms (top-k: 3)
+[2] Gemini Parameter Extraction: 8904ms
+[3] Parallel Operations Total: 8904ms
+[4] Gemini Response Generation: 5031ms
+[5] Overall: 13938ms
+====================================
+
+====================================
+[RAG Pipeline Durations - Non-Stream Mode]
+[1] Pinecone Search: 1704ms (top-k: 3)
+[2] Gemini Parameter Extraction: 9471ms
+[3] Parallel Operations Total: 9471ms
+[4] Gemini Response Generation: 13615ms
+[5] Overall: 23090ms
+====================================

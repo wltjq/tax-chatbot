@@ -11,6 +11,10 @@ interface ChatMessageItemProps {
 export default function ChatMessageItem({ message }: ChatMessageItemProps) {
   const isUser = message.role === 'user';
   
+  if (!isUser && !message.content) {
+    return null;
+  }
+  
   return (
     <div className={`flex w-full mt-4 space-x-3 max-w-4xl ${isUser ? 'ml-auto justify-end' : 'mr-auto justify-start'}`}>
       {/* Avatar Icon */}

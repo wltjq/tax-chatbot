@@ -88,6 +88,8 @@ export const db = {
   },
 
   saveChat: async (sessionId: string, userMessage: string, assistantMessage: string, citations: any) => {
+    if (sessionId === 'benchmark-session') return;
+    
     let savedToSupabase = false;
     try {
       if (await isSupabaseHealthy()) {

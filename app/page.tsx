@@ -30,7 +30,7 @@ export default function Home() {
   }, []);
 
   // Fetch all sessions from the API
-  const fetchSessions = async (targetActiveId: string | null = null) => {
+  const fetchSessions = async (targetActiveId: string | null = null, skipFetchMessages: boolean = false) => {
     setIsLoadingSessions(true);
     try {
       const res = await fetch('/api/sessions');
@@ -42,7 +42,9 @@ export default function Home() {
         if (data.length > 0) {
           const nextActiveId = targetActiveId || data[0].id;
           setActiveSessionId(nextActiveId);
-          fetchMessages(nextActiveId);
+          if (!skipFetchMessages) {
+            fetchMessages(nextActiveId);
+          }
         } else {
           // No sessions exist yet, initialize a fresh one
           startNewSession();
@@ -145,60 +147,133 @@ export default function Home() {
     setMessages(prev => [...prev, userMsg]);
     setIsGenerating(true);
 
+    // Create a placeholder message for the assistant that we will update in real-time
+    const assistantMsgId = generateUUID();
+    const assistantPlaceholderMsg: ChatMessage = {
+      id: assistantMsgId,
+      sessionId: currentSessionId,
+      role: 'assistant',
+      content: '',
+      citations: [],
+      createdAt: new Date()
+    };
+
+    // Pre-append assistant placeholder
+    setMessages(prev => [...prev, assistantPlaceholderMsg]);
+
     try {
-      // Get conversation history to pass as context (excluding the new userMsg)
+      // Get conversation history to pass as context (excluding the new userMsg and placeholder)
       const chatHistory = messages.map(m => ({
         role: m.role,
         content: m.content,
         citations: m.citations
       }));
 
-      // 2. Call the chat route API
+      // 2. Call the chat route API with stream: true
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
           sessionId: currentSessionId,
-          history: chatHistory
+          history: chatHistory,
+          stream: true
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '상담 처리 중 오류가 발생했습니다.');
+        let errMsg = '상담 처리 중 오류가 발생했습니다.';
+        try {
+          const errorData = await response.json();
+          errMsg = errorData.error || errMsg;
+        } catch (_) {}
+        throw new Error(errMsg);
       }
 
-      const responseData = await response.json();
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('스트림 리더를 초기화할 수 없습니다.');
+      }
 
-      // 3. Append assistant message to state
-      const assistantMsg: ChatMessage = {
-        id: generateUUID(),
-        sessionId: currentSessionId,
-        role: 'assistant',
-        content: responseData.content,
-        citations: responseData.citations || [],
-        createdAt: new Date()
-      };
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulatedText = '';
+      let citations: any[] = [];
 
-      setMessages(prev => [...prev, assistantMsg]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Split stream buffer by newline to parse JSON lines
+        const lines = buffer.split('\n');
+        // Keep the last partial line in buffer
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          try {
+            const data = JSON.parse(trimmed);
+            if (data.type === 'content') {
+              accumulatedText += data.delta;
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMsgId
+                    ? { ...msg, content: accumulatedText }
+                    : msg
+                )
+              );
+            } else if (data.type === 'citations') {
+              citations = data.citations || [];
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMsgId
+                    ? { ...msg, citations }
+                    : msg
+                )
+              );
+            } else if (data.type === 'done') {
+              if (data.citations) {
+                citations = data.citations;
+              }
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMsgId
+                    ? { ...msg, content: accumulatedText, citations }
+                    : msg
+                )
+              );
+            } else if (data.type === 'error') {
+              throw new Error(data.message || '상담을 처리하지 못했습니다.');
+            }
+          } catch (e: any) {
+            if (e.message && e.message.includes('JSON')) {
+              // Ignore partial JSON parse errors
+            } else {
+              throw e;
+            }
+          }
+        }
+      }
 
       // 4. Reload sessions to update lists & titles (since a new session might have been saved in DB)
-      fetchSessions(currentSessionId);
+      fetchSessions(currentSessionId, true);
 
     } catch (error: any) {
       console.error('Send message error:', error);
       
-      // Show user-friendly error message in chat feed
-      const errorMsg: ChatMessage = {
-        id: generateUUID(),
-        sessionId: currentSessionId,
-        role: 'assistant',
-        content: `오류: ${error.message || '상담을 처리하지 못했습니다. API 키 및 데이터베이스 환경 변수(.env.local) 설정을 확인해주세요.'}`,
-        citations: [],
-        createdAt: new Date()
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      // Update assistant message with user-friendly error details
+      const errorText = `오류: ${error.message || '상담을 처리하지 못했습니다. API 키 및 데이터베이스 환경 변수(.env.local) 설정을 확인해주세요.'}`;
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantMsgId
+            ? { ...msg, content: errorText, citations: [] }
+            : msg
+        )
+      );
     } finally {
       setIsGenerating(false);
     }

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchTaxLaw, TaxLawMatch } from '@/lib/pinecone/client';
-import { generateTaxAnswer, extractTaxParameters } from '@/lib/gemini/client';
+import { generateTaxAnswer, extractTaxParameters, generateTaxAnswerStream, extractCitationsFromText } from '@/lib/gemini/client';
 import { calculateIncomeTax } from '@/lib/tax-calculator';
 import { db } from '@/lib/supabase/db';
+import fs from 'fs';
+import path from 'path';
 
 // Anonymize sensitive PII (Resident numbers, Phone numbers) before saving to DB
 function anonymizeText(text: string): string {
@@ -24,8 +26,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     message = body.message;
     sessionId = body.sessionId;
-    // Keep only the last 4 messages to prevent token limit exhaustion (Sliding Window)
     const history = (body.history || []).slice(-4);
+    const isStream = !!body.stream;
 
     if (!message) {
       return NextResponse.json({ error: '메시지가 누락되었습니다.' }, { status: 400 });
@@ -35,23 +37,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '세션 ID가 누락되었습니다.' }, { status: 400 });
     }
 
-    console.log(`Processing chat for session ${sessionId}, query: "${message.substring(0, 30)}..."`);
+    console.log(`Processing chat for session ${sessionId}, query: "${message.substring(0, 30)}..." (stream: ${isStream})`);
 
-    // 1. Parameter Extraction for Tax Calculation
+    const totalStart = Date.now();
+    let pineconeDuration = 0;
+    let geminiParamDuration = 0;
+    let geminiGenDuration = 0;
+
+    // 1 & 2. Run Pinecone search and Gemini parameter extraction in parallel using Promise.all
+    const parallelStart = Date.now();
+    const [extractedParams, searchResults] = await Promise.all([
+      (async () => {
+        const paramStart = Date.now();
+        try {
+          const calcKeywords = ['원', '만원', '연봉', '월급', '급여', '소득', '수입', '계산', '공제'];
+          const mightNeedCalculation = calcKeywords.some(k => message.includes(k)) || /\d/.test(message);
+          if (mightNeedCalculation) {
+            const params = await extractTaxParameters(message);
+            geminiParamDuration = Date.now() - paramStart;
+            return params;
+          }
+        } catch (e) {
+          console.error('Failed to extract parameters:', e);
+        }
+        return { isTaxCalculation: false };
+      })(),
+      (async () => {
+        const pineconeStart = Date.now();
+        try {
+          console.time('[1] Pinecone 검색');
+          // Pinecone top-k search with limit = 3
+          const results = await searchTaxLaw(message, 3);
+          console.timeEnd('[1] Pinecone 검색');
+          pineconeDuration = Date.now() - pineconeStart;
+          return results;
+        } catch (e) {
+          console.timeEnd('[1] Pinecone 검색');
+          console.error('Vector search failed:', e);
+          return [];
+        }
+      })()
+    ]);
+
+    const parallelDuration = Date.now() - parallelStart;
+
+    // 3. Tax calculation logic if required
     let calcResultString = '';
-    let hasCalculation = false;
-    
-    try {
-      // Optimize: Only call parameter extraction if query contains numbers or tax calculation keywords
-      const calcKeywords = ['원', '만원', '연봉', '월급', '급여', '소득', '수입', '계산', '공제'];
-      const mightNeedCalculation = calcKeywords.some(k => message.includes(k)) || /\d/.test(message);
-      
-      if (mightNeedCalculation) {
-        const extractedParams = await extractTaxParameters(message);
-        if (extractedParams.isTaxCalculation && extractedParams.annualSalary && extractedParams.annualSalary > 0) {
-        hasCalculation = true;
-        
-        // Calculate taxes using our module
+    if (extractedParams.isTaxCalculation && extractedParams.annualSalary && extractedParams.annualSalary > 0) {
+      try {
         const taxInput = {
           annualSalary: extractedParams.annualSalary,
           hasSpouse: !!extractedParams.hasSpouse,
@@ -61,10 +94,8 @@ export async function POST(req: NextRequest) {
           isSingleParent: !!extractedParams.isSingleParent,
           isFemaleHeadOfHouseholdWithLowIncome: !!extractedParams.isFemaleHeadOfHouseholdWithLowIncome
         };
-        
         const result = calculateIncomeTax(taxInput);
         
-        // Format calculation result
         calcResultString = `
 [세금 계산서 요약]
 - 연간 총급여액(연봉): ${result.annualSalary.toLocaleString()}원
@@ -81,35 +112,131 @@ export async function POST(req: NextRequest) {
 - 최종 예상 납부세액: ${result.estimatedTaxPayable.toLocaleString()}원
 `;
         console.log('Tax calculation performed successfully.');
-        }
+      } catch (calcErr) {
+        console.error('Error computing tax details:', calcErr);
       }
-    } catch (e) {
-      console.error('Failed to extract parameters or calculate tax:', e);
     }
 
-    // 2. Vector Search (Pinecone RAG)
-    // Even if we have a calculation, we still search to pull relevant legal clauses (like 제47조 근로소득공제, 제50조 기본공제 등)
-    let searchResults: TaxLawMatch[] = [];
-    try {
-      // Formulate a clean search query
-      const searchQuery = hasCalculation ? '근로소득공제 인적공제 기본공제 세율 구간 소득세' : message;
-      searchResults = await searchTaxLaw(searchQuery, 4);
-    } catch (e) {
-      console.error('Vector search failed:', e);
+    // 4. Return Streaming or Standard Response
+    if (isStream) {
+      const responseStream = new ReadableStream({
+        async start(controller) {
+          const encoder = new TextEncoder();
+          let fullText = '';
+          const geminiStart = Date.now();
+
+          try {
+            console.time('[2] Gemini 응답');
+            const stream = generateTaxAnswerStream(message, searchResults, history, calcResultString);
+
+            for await (const chunk of stream) {
+              fullText += chunk;
+              controller.enqueue(encoder.encode(JSON.stringify({
+                type: 'content',
+                delta: chunk
+              }) + '\n'));
+            }
+            console.timeEnd('[2] Gemini 응답');
+
+            geminiGenDuration = Date.now() - geminiStart;
+            const finalCitations = extractCitationsFromText(fullText, searchResults);
+
+            controller.enqueue(encoder.encode(JSON.stringify({
+              type: 'done',
+              citations: finalCitations
+            }) + '\n'));
+
+            // Save to DB asynchronously
+            const cleanUserMessage = anonymizeText(message);
+            const cleanAssistantMessage = anonymizeText(fullText);
+            await db.saveChat(sessionId, cleanUserMessage, cleanAssistantMessage, finalCitations);
+
+            const totalDuration = Date.now() - totalStart;
+            const logMsg = `\n====================================\n` +
+              `[RAG Pipeline Durations - Stream Mode]\n` +
+              `[1] Pinecone Search: ${pineconeDuration}ms (top-k: 3)\n` +
+              `[2] Gemini Parameter Extraction: ${geminiParamDuration}ms\n` +
+              `[3] Parallel Operations Total: ${parallelDuration}ms\n` +
+              `[4] Gemini Response Generation: ${geminiGenDuration}ms\n` +
+              `[5] Overall: ${totalDuration}ms\n` +
+              `====================================\n`;
+            console.log(logMsg);
+            try {
+              fs.appendFileSync(path.join(process.cwd(), 'pipeline_durations.log'), logMsg, 'utf-8');
+            } catch (e) {
+              console.error('Failed to write duration log file:', e);
+            }
+
+          } catch (streamErr: any) {
+            console.error('Error during streaming generation:', streamErr);
+            
+            if (streamErr.message && (streamErr.message.includes('429') || streamErr.message.includes('All Gemini models failed') || streamErr.message.includes('Quota'))) {
+              const fallbackContent = '현재 AI 모델의 일일 허용된 사용량(요청 한도 및 토큰)을 초과하여 답변을 생성할 수 없습니다. 잠시 후 다시 시도해주세요.';
+              controller.enqueue(encoder.encode(JSON.stringify({
+                type: 'content',
+                delta: fallbackContent
+              }) + '\n'));
+              controller.enqueue(encoder.encode(JSON.stringify({
+                type: 'done',
+                citations: []
+              }) + '\n'));
+              
+              try {
+                const cleanUserMessage = anonymizeText(message);
+                await db.saveChat(sessionId, cleanUserMessage, fallbackContent, []);
+              } catch (dbErr) {}
+            } else {
+              controller.enqueue(encoder.encode(JSON.stringify({
+                type: 'error',
+                message: streamErr.message || 'Streaming failed.'
+              }) + '\n'));
+            }
+          } finally {
+            controller.close();
+          }
+        }
+      });
+
+      return new Response(responseStream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'Connection': 'keep-alive'
+        }
+      });
+    } else {
+      // Standard non-streaming response for benchmark tests
+      const geminiStart = Date.now();
+      console.time('[2] Gemini 응답');
+      const response = await generateTaxAnswer(message, searchResults, history, calcResultString);
+      console.timeEnd('[2] Gemini 응답');
+      geminiGenDuration = Date.now() - geminiStart;
+
+      const cleanUserMessage = anonymizeText(message);
+      const cleanAssistantMessage = anonymizeText(response.content);
+      await db.saveChat(sessionId, cleanUserMessage, cleanAssistantMessage, response.citations);
+
+      const totalDuration = Date.now() - totalStart;
+      const logMsg = `\n====================================\n` +
+        `[RAG Pipeline Durations - Non-Stream Mode]\n` +
+        `[1] Pinecone Search: ${pineconeDuration}ms (top-k: 3)\n` +
+        `[2] Gemini Parameter Extraction: ${geminiParamDuration}ms\n` +
+        `[3] Parallel Operations Total: ${parallelDuration}ms\n` +
+        `[4] Gemini Response Generation: ${geminiGenDuration}ms\n` +
+        `[5] Overall: ${totalDuration}ms\n` +
+        `====================================\n`;
+      console.log(logMsg);
+      try {
+        fs.appendFileSync(path.join(process.cwd(), 'pipeline_durations.log'), logMsg, 'utf-8');
+      } catch (e) {
+        console.error('Failed to write duration log file:', e);
+      }
+
+      return NextResponse.json({
+        content: response.content,
+        citations: response.citations
+      });
     }
-
-    // 3. Gemini LLM Generation
-    const response = await generateTaxAnswer(message, searchResults, history, calcResultString);
-
-    // 4. Save to Database (unified wrapper with automatic local DB fallback)
-    const cleanUserMessage = anonymizeText(message);
-    const cleanAssistantMessage = anonymizeText(response.content);
-    await db.saveChat(sessionId, cleanUserMessage, cleanAssistantMessage, response.citations);
-
-    return NextResponse.json({
-      content: response.content,
-      citations: response.citations
-    });
 
   } catch (error: any) {
     console.error('API Error:', error);
@@ -117,8 +244,6 @@ export async function POST(req: NextRequest) {
     // Check if it's a rate limit or quota error
     if (error.message && (error.message.includes('429') || error.message.includes('Too Many Requests') || error.message.includes('Quota'))) {
       const fallbackContent = '현재 AI 모델의 일일 허용된 사용량(요청 한도 및 토큰)을 초과하여 답변을 생성할 수 없습니다. 잠시 후(또는 내일) 다시 시도해주세요.';
-      
-      // We must save this to the DB, otherwise frontend's fetchSessions will wipe the chat!
       try {
         const cleanUserMessage = anonymizeText(message);
         await db.saveChat(sessionId, cleanUserMessage, fallbackContent, []);
